@@ -1,0 +1,76 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from datetime import datetime
+
+# Load dataset
+filename = Unemployment-in-India.csv   
+df = pd.read_csv(filename)
+
+# Clean columns and parse dates
+df.columns = [col.strip().replace('\ufeff','') for col in df.columns]
+df['Date'] = pd.to_datetime(df['Date'], dayfirst=True, errors='coerce')
+
+# Filter monthly frequency and drop rows with missing unemployment rate or date
+df = df[df['Frequency'].str.strip().str.lower() == 'monthly']
+df = df.dropna(subset=['Estimated Unemployment Rate (%)', 'Date'])
+
+# Separate rural and urban data
+df_rural = df[df['Area'].str.strip().str.lower() == 'rural']
+df_urban = df[df['Area'].str.strip().str.lower() == 'urban']
+
+# Aggregate by date to get national average unemployment rates
+rural_avg = df_rural.groupby('Date')['Estimated Unemployment Rate (%)'].mean()
+urban_avg = df_urban.groupby('Date')['Estimated Unemployment Rate (%)'].mean()
+
+# Define Covid period for impact analysis
+covid_start = datetime(2020, 3, 1)
+covid_end = datetime(2020, 6, 30)
+
+# Calculate mean unemployment before and during Covid
+pre_covid_rural_mean = rural_avg[rural_avg.index < covid_start].mean()
+covid_rural_mean = rural_avg[(rural_avg.index >= covid_start) & (rural_avg.index <= covid_end)].mean()
+pre_covid_urban_mean = urban_avg[urban_avg.index < covid_start].mean()
+covid_urban_mean = urban_avg[(urban_avg.index >= covid_start) & (urban_avg.index <= covid_end)].mean()
+
+print("Pre-Covid Rural Avg Unemployment Rate:", round(pre_covid_rural_mean, 2))
+print("Covid Period Rural Avg Unemployment Rate:", round(covid_rural_mean, 2))
+print("Pre-Covid Urban Avg Unemployment Rate:", round(pre_covid_urban_mean, 2))
+print("Covid Period Urban Avg Unemployment Rate:", round(covid_urban_mean, 2))
+
+# Plot unemployment trends over time with Covid period highlighted
+plt.figure(figsize=(14,7))
+sns.lineplot(x=rural_avg.index, y=rural_avg, label='Rural Average')
+sns.lineplot(x=urban_avg.index, y=urban_avg, label='Urban Average')
+plt.axvspan(covid_start, covid_end, color='red', alpha=0.2, label='Covid Period (Mar-Jun 2020)')
+plt.title('Unemployment Rate Trends in India (Rural & Urban)')
+plt.xlabel('Date')
+plt.ylabel('Unemployment Rate (%)')
+plt.legend()
+plt.show()
+
+# Add month column for seasonal trend analysis
+df['Month'] = df['Date'].dt.month
+
+# Calculate average unemployment by month and area to identify seasonal trends
+seasonal_rural = df_rural.groupby('Month')['Estimated Unemployment Rate (%)'].mean()
+seasonal_urban = df_urban.groupby('Month')['Estimated Unemployment Rate (%)'].mean()
+
+# Plot seasonal unemployment variation
+plt.figure(figsize=(10,5))
+plt.plot(seasonal_rural.index, seasonal_rural.values, marker='o', label='Rural Average by Month')
+plt.plot(seasonal_urban.index, seasonal_urban.values, marker='o', label='Urban Average by Month')
+plt.title('Seasonal Average Unemployment Rates in India')
+plt.xlabel('Month')
+plt.ylabel('Average Unemployment Rate (%)')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Policy Insight Suggestions
+if covid_rural_mean > pre_covid_rural_mean or covid_urban_mean > pre_covid_urban_mean:
+    print("\nInsight: Significant increase in unemployment during Covid-19 in both rural and urban areas suggests need for targeted economic relief and job creation measures, particularly in urban centers with higher spike.")
+print("Seasonal peaks in unemployment indicate scheduling of social assistance and employment programs around vulnerable months (e.g., April-May).")
+
+
+ 

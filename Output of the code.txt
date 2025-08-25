@@ -1,0 +1,9 @@
+Output of the code:
+
+Pre-Covid Rural Avg Unemployment Rate: 8.09
+Covid Period Rural Avg Unemployment Rate: 16.12
+Pre-Covid Urban Avg Unemployment Rate: 10.85
+Covid Period Urban Avg Unemployment Rate: 19.35
+
+Insight: Significant increase in unemployment during Covid-19 in both rural and urban areas suggests need for targeted economic relief and job creation measures, particularly in urban centers with higher spike.
+Seasonal peaks in unemployment indicate scheduling of social assistance and employment programs around vulnerable months (e.g., April-May).
